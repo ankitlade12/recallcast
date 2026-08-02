@@ -11,7 +11,7 @@ from app.domain.models import FactContract, RecallExtraction
 
 MAX_SOURCE_BYTES = 200 * 1024
 ALLOWED_SOURCE_SUFFIXES = {".txt", ".md", ".json"}
-EXTRACTION_MODEL = os.getenv("OPENAI_EXTRACTION_MODEL", "gpt-5.6")
+EXTRACTION_MODEL = os.getenv("OPENAI_EXTRACTION_MODEL", "gpt-5.6-sol")
 
 
 def validate_source(source_name: str, source_text: str) -> tuple[str, str]:

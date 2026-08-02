@@ -630,7 +630,7 @@ def extract_intake(request: IntakeRequest):
         status="incomplete" if warnings else "needs_review",
         source_name=source_name,
         source_sha256=source_digest,
-        extraction_model=os.getenv("OPENAI_EXTRACTION_MODEL", "gpt-5.6"),
+        extraction_model=os.getenv("OPENAI_EXTRACTION_MODEL", "gpt-5.6-sol"),
         extraction=extraction,
         validation_warnings=warnings,
     )

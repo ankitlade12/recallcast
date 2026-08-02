@@ -181,7 +181,7 @@ async function mockMutableFlows(page: Page) {
       status: "needs_review",
       source_name: "harbor-recall.md",
       source_sha256: "a".repeat(64),
-      extraction_model: "gpt-5.6",
+      extraction_model: "gpt-5.6-sol",
       extraction,
       validation_warnings: [],
       storage_objects: [{ key: "recallcast/intake/draft_browser_test/source/harbor-recall.md" }],
