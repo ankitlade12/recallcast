@@ -12,3 +12,7 @@ test-results/
 playwright-report/
 dist/
 data/
+
+# Local-only workspace context
+AGENTS.md
+*_Resume.md

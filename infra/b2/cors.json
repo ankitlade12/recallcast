@@ -11,7 +11,7 @@
       ],
       "AllowedOrigins": [
         "http://localhost:3000",
-        "https://YOUR-DEPLOYED-WEB-APP.example"
+        "https://recallcast-app-ankitlade12.onrender.com"
       ],
       "ExposeHeaders": [
         "Content-Length",

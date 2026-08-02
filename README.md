@@ -1,75 +1,375 @@
-# RecallCast
+# RecallCast — Fact-Locked Generative Media for Product Recalls
 
-**Fact-locked generative media for product recalls.**
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Backblaze B2](https://img.shields.io/badge/Backblaze-B2-F50000.svg)](https://www.backblaze.com/cloud-storage)
+[![Genblaze](https://img.shields.io/badge/Genblaze-0.3.x-2F6FED.svg)](https://github.com/backblaze-labs/genblaze)
+[![OpenAI](https://img.shields.io/badge/OpenAI-multimodal-111111.svg?logo=openai&logoColor=white)](https://platform.openai.com/docs/)
+[![Render](https://img.shields.io/badge/Render-ready-46E3B7.svg?logo=render&logoColor=111111)](#deploying-to-render)
+[![Tests](https://img.shields.io/badge/tests-42%20API%20%2B%205%20browser-brightgreen.svg)](#reproducible-testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-RecallCast turns an approved safety notice into an English and Spanish media
-package, reverse-extracts the claims in every asset, and blocks release when a
-critical fact is missing, mutated, contradicted, or weakened.
+> **Generative media can be polished and wrong. RecallCast proves every safety-critical fact survived generation before a human may release it.**
 
-The core product is **FactLock**, a safety compiler:
+RecallCast is a multimodal release-assurance platform for product-recall communications. It converts an approved notice into voice and visual media, independently observes the final MP3 and rendered pixels, blocks factual drift, preserves corrective lineage, and records the accountable human decision in private Backblaze B2 storage.
+
+Its core engine, **FactLock**, treats a recall notice like a safety contract—not a prompt.
 
 ```text
-approved notice → typed fact contract → generated media → reverse extraction
-                → deterministic per-modality checks → human release gate
+approved source → confirmed fact contract → active policy pack → generated media
+                → reverse observation → deterministic FactLock → human decision
 ```
 
-## Architecture
+**Hackathon:** Backblaze Generative Media Hackathon — Genblaze on B2<br>
+**Repository:** <https://github.com/ankitlade12/recallcast><br>
+**Demo posture:** fictional controlled case plus a clearly labeled, unaffiliated public-source CPSC proof
+
+## Quick Highlights
+
+- **Final-Media Verification** — validates reverse-transcribed narration and text read from the final rendered pixels, not merely the intended script
+- **Fail-Closed FactLock** — missing, mutated, contradicted, weakened, or unavailable critical evidence quarantines the asset
+- **Real Mutation Proof** — caught a missing digit in a generated serial-number narration that otherwise sounded plausible
+- **Bounded Corrective Agent** — one contract-derived retry, linked to its rejected parent; no open-ended autonomous loop
+- **Policy Pack Builder** — safely moves confirmed custom sources into deterministic validation without letting an LLM invent release rules
+- **Human Release Authority** — passing AI checks produce `needs_review`, never automatic approval
+- **B2 Evidence Graph** — sources, contracts, policies, media, manifests, observations, failed attempts, and decisions remain durably linked
+- **Genblaze-Native Orchestration** — real image and TTS provider runs, B2 storage sink, verified manifests, and parent-child lineage
+- **Two-Asset Public Media Kit** — action-first consumer alert paired with an exact-model eligibility companion
+- **Judge Mode** — exposes the rejected narration, corrected child, evidence diff, and release gate in one guided view
+
+## The Problem
+
+An approved recall notice is rarely the format consumers ultimately receive. Safety and communications teams must turn it into social cards, audio announcements, localized guidance, and accessible media—often under urgent deadlines.
+
+Generative AI accelerates production, but it introduces a dangerous failure mode: an asset may look and sound credible while changing a model number, dropping a serial digit, weakening “stop using immediately,” inventing a remedy, or altering a contact detail.
+
+Prompt review cannot prove what reached the final file. Semantic similarity cannot safely validate exact identifiers.
+
+**Safety-critical media needs a release gate, not another confidence score.**
+
+## The Solution
+
+RecallCast compiles an approved source into closed-world release invariants:
+
+1. Import or select an approved recall notice.
+2. Extract a structured draft with OpenAI Structured Outputs.
+3. Require a person to review and confirm every source-grounded fact.
+4. Bind the contract to an explicit deterministic policy pack.
+5. Generate a creative background and AI narration through Genblaze.
+6. Compose critical safety copy with a deterministic renderer.
+7. Reverse-transcribe the generated audio.
+8. Independently read the final image pixels.
+9. Run per-modality FactLock checks.
+10. Quarantine drift and allow at most one contract-derived correction.
+11. Require a named reviewer to approve or reject the package.
+12. Store the complete evidence and lineage graph in private B2.
+
+The intended script and overlay manifest remain separate from the observed transcript and OCR. Intended copy can never substitute for evidence extracted from the final media.
+
+## Verified Proof: One Missing Digit Stopped Release
+
+The public-source demonstration uses the CPSC notice for Frigidaire Gas Ranges, Recall 26-333. RecallCast is not affiliated with CPSC or Electrolux Group, and every generated asset is labeled as an unaffiliated AI draft requiring human review.
+
+The locked contract includes:
+
+- 23 exact model identifiers
+- serial range `VF52200000–VF54399999`
+- delayed-ignition burn hazard
+- immediate stop-use action
+- approved repair remedy
+- official contact details and recall date
+
+During a real Genblaze narration run, reverse transcription observed a malformed serial endpoint. FactLock rejected the attempt, retained its media and report in B2, rebuilt the fragile narration from the contract, and generated one parent-linked corrective child.
+
+| Evidence | Rejected attempt | Corrective attempt |
+|---|---|---|
+| Decision | `quarantined` | `needs_review` |
+| Upper serial evidence | missing digit | exact character sequence |
+| Run | `503ac6b5-88be-4c6d-b38e-4b5ae07c9ba9` | `22655855-0461-443a-ac08-45ac378d976c` |
+| Parent link | none | rejected run |
+| Final FactLock result | blocked | 14 checks passed, 0 blocking |
+
+Passing validation still did not release the package. It advanced only to the human decision gate.
+
+## Architecture Overview
+
+### Assurance Loop
 
 ```mermaid
 flowchart LR
-    A[Approved notice] --> B[Typed fact contract]
-    B --> C[Genblaze image + TTS runs]
-    C --> D[Private Backblaze B2]
-    B --> E[Deterministic locked compositor]
-    D --> E
-    E --> F[Final PNG + MP3]
-    F --> G[Transcription + final-pixel reading]
-    G --> H{FactLock per modality}
-    H -->|fail| I[Quarantine + parent-linked retry]
-    I --> C
-    H -->|pass| J[Human review]
-    J --> K[Approval evidence in B2]
-    B -->|new source version| L[Invalidate dependent assets]
+    S[Approved recall source] --> C[Human-confirmed fact contract]
+    C --> P[Deterministic policy pack]
+    P --> G[Genblaze image and TTS generation]
+    G --> B[(Private Backblaze B2)]
+    C --> R[Locked media compositor]
+    B --> R
+    R --> M[Final PNG and MP3]
+    M --> O[Reverse transcription and pixel reading]
+    O --> F{FactLock per modality}
+    F -->|blocking drift| Q[Quarantine evidence]
+    Q -->|one bounded correction| G
+    F -->|all checks pass| H[Human approve or reject]
+    H --> D[(Append-only B2 decision)]
 ```
 
-The intended script and overlay manifest are stored separately from the
-observed transcript and OCR. Both sides must conform to the same contract;
-the intended text can never substitute for evidence extracted from the final
-media.
+### System Architecture
 
-This repository currently contains the first end-to-end hackathon slice:
+```mermaid
+graph TB
+    subgraph "PRODUCT EXPERIENCE"
+        WORKSPACE[Recall workspace]
+        IMPORT[Bring-your-own-source intake]
+        POLICY[Policy Pack Builder]
+        JUDGE[One-Click Judge Mode]
+        REVIEW[Human release gate]
+    end
 
-- A polished judge-facing RecallCast workspace
-- A typed fictional recall and fact contract
-- Deterministic checks for identifiers, lot bounds, safety action, remedy,
-  phone number, URL, and effective date
-- Controlled `NG-110 → NG-101` and action-weakening failures
-- Fail-closed quarantine decisions with extracted evidence
-- Retry lineage and a passing corrected attempt
-- Human approval and source-update invalidation in the UI
-- Live OpenAI image and narration generation through Genblaze into private B2
-- Reverse transcription and visual reading against separate channel policies
-- A verified English image/audio evidence package with 15 passing checks
-- A bounded, parent-linked corrective narration retry that preserves its rejected parent
-- Review-first `.txt`, `.md`, and `.json` intake with OpenAI Structured Outputs,
-  deterministic source-grounding checks, and separate B2 draft/confirmation objects
-- A first safe Policy Pack Builder for English stop-use recalls: reviewer-selected
-  source-grounded concepts, exact model/range rules, contract/policy hash binding,
-  B2 persistence, custom voice + visual generation, FactLock, and human approve/reject
-- A separately labeled public-source workspace for CPSC recall 26-333 with
-  23 exact models, one serial range, regulator attribution, explicit operator
-  acknowledgment, and a runnable fail-closed voice + visual draft
-- One-click Judge Mode that exposes the rejected narration beside its verified
-  parent-linked correction, with both playable B2-backed audio attempts
-- A two-asset public media kit: action-first consumer alert plus the exact-model
-  eligibility companion required by the public-case policy
-- Python tests that do not require credentials
+    subgraph "APPLICATION LAYER"
+        WEB[Next.js + React + TypeScript]
+        API[FastAPI + Pydantic]
+        COMPOSE[Deterministic Pillow compositor]
+        FACTLOCK[FactLock policy engine]
+    end
 
-## Run locally
+    subgraph "GENERATIVE AND OBSERVATION LAYER"
+        GENBLAZE[Genblaze Pipeline]
+        IMAGE[OpenAI image generation]
+        TTS[OpenAI text-to-speech]
+        TRANSCRIBE[OpenAI transcription]
+        VISION[OpenAI final-pixel reading]
+    end
 
-### API
+    subgraph "DURABLE EVIDENCE"
+        B2[(Private Backblaze B2)]
+        MANIFEST[Verified manifests]
+        LINEAGE[Rejected and corrective runs]
+        DECISION[Human review records]
+    end
 
-Python 3.11+ is required.
+    WORKSPACE --> WEB
+    IMPORT --> WEB
+    POLICY --> WEB
+    JUDGE --> WEB
+    REVIEW --> WEB
+    WEB --> API
+    API --> GENBLAZE
+    GENBLAZE --> IMAGE
+    GENBLAZE --> TTS
+    API --> TRANSCRIBE
+    API --> VISION
+    API --> COMPOSE
+    API --> FACTLOCK
+    GENBLAZE --> B2
+    COMPOSE --> B2
+    FACTLOCK --> B2
+    B2 --> MANIFEST
+    B2 --> LINEAGE
+    B2 --> DECISION
+
+    style FACTLOCK fill:#e4f0e8,stroke:#146b48,stroke-width:2px
+    style B2 fill:#f7e9e5,stroke:#a94336,stroke-width:2px
+    style REVIEW fill:#f4f8dc,stroke:#72851f,stroke-width:2px
+```
+
+The governing rule is enforced in code: **AI may create and observe media, but deterministic policy and accountable human review control release.**
+
+## Product Features
+
+### Fact Contract and Source Intake
+
+- Review-first `.txt`, `.md`, and `.json` import up to 200 KB
+- Schema-constrained OpenAI extraction
+- Source-grounding checks for every editable value
+- Separate source, extraction-draft, and confirmed-contract objects
+- Contract SHA-256 used as the dependency boundary
+- Explicit rejection of PDFs and images in the safe MVP
+
+### Deterministic Policy Pack Builder
+
+- Exact model identifiers auto-locked from the confirmed contract
+- Exact lot and serial range endpoints auto-locked
+- Reviewer-selected, source-grounded hazard, action, and remedy concepts
+- Stop-use and urgency requirements enforced by the template
+- Contract hash and policy hash bound into generated evidence
+- Provider generation disabled until reviewer attestation
+- Unsupported structures rejected before provider spend
+
+The first custom template intentionally supports English stop-use recalls with 1–4 models, 1–3 ranges, a phone number, and a URL. New recall classes require new explicit templates; RecallCast does not ask a language model to invent safety policy at runtime.
+
+### Multimodal Generation and Observation
+
+- Creative background through Genblaze and OpenAI `gpt-image-2`
+- Narration through Genblaze and OpenAI `gpt-4o-mini-tts`
+- Reverse transcription with `gpt-transcribe`
+- Final-pixel reading with OpenAI vision
+- Deterministic, Unicode-safe critical-copy composition with Pillow
+- Separate audio and visual evidence requirements
+- Short-lived presigned URLs for private browser review
+
+### FactLock Release Assurance
+
+- Exact or normalized identifier matching
+- Complete range-endpoint validation
+- Hazard concept coverage
+- Required-action polarity and weakening checks
+- Remedy contradiction checks
+- Normalized phone and URL matching
+- Effective-date verification
+- Manifest, contract, and policy integrity checks
+- Missing evidence treated as blocking, never as a low-confidence pass
+
+### Corrective Lineage and Human Authority
+
+- Rejected attempt retained with its transcript and validation report
+- At most one content-aware, contract-derived corrective retry
+- Corrective Genblaze run linked to its failed parent
+- Passing package remains `needs_review`
+- Approval requires reviewer identity, rationale, and explicit attestation
+- Approval and rejection are terminal decisions
+- Review record binds contract, validation report, and artifact hashes
+
+## Backblaze B2 as an Evidence Graph
+
+B2 is not used as a flat media folder. RecallCast organizes source truth, generated artifacts, reverse observations, and decisions into a durable hierarchy:
+
+```text
+recallcast/
+├── intake/<draft-id>/
+│   ├── source/<source-file>
+│   ├── extraction-draft.json
+│   ├── confirmed-contract.json
+│   ├── policy-draft.json
+│   └── active-policy.json
+├── recalls/<recall-id>/
+│   ├── source/v001/
+│   │   ├── notice.txt
+│   │   └── fact-contract.json
+│   └── packages/<contract-hash>/<locale>/
+│       ├── social-card.png
+│       ├── approved-script.txt
+│       ├── observed-transcript.txt
+│       ├── observed-ocr.txt
+│       ├── validation.json
+│       ├── attempts/001/...
+│       ├── reviews/...
+│       └── package.json
+├── quarantine/<recall-id>/<run-id>/...
+└── genblaze/runs/<date>/<run-id>/
+    ├── assets/<asset>
+    └── manifest.json
+```
+
+Every application-written object includes SHA-256 metadata. Genblaze assets retain immutable run identities and canonical manifests. Private media reaches the browser only through bounded presigned GET URLs.
+
+Operational B2 configuration is documented in [`infra/b2`](infra/b2/README.md), with implementation details in [`docs/B2_STORAGE.md`](docs/B2_STORAGE.md).
+
+## Genblaze Integration
+
+RecallCast uses Genblaze as a working orchestration dependency, not as a wrapper mentioned only in documentation.
+
+| Genblaze capability | RecallCast usage |
+|---|---|
+| `Pipeline` | image and narration provider execution |
+| `OpenAITTSProvider` | AI narration generation |
+| OpenAI image provider | creative background generation |
+| `ObjectStorageSink` | direct S3-compatible transfer into B2 |
+| canonical manifest | SHA-256 asset and run verification |
+| `Pipeline.from_result(...)` | parent-linked corrective narration |
+| structured run metadata | provider, model, attempt, latency, and lineage evidence |
+
+Verified SDK versions:
+
+| Package | Version |
+|---|---:|
+| `genblaze-core` | `0.3.8` |
+| `genblaze-s3` | `0.3.6` |
+| `genblaze-openai` | `0.3.4` |
+
+See [`docs/GENBLAZE_USAGE.md`](docs/GENBLAZE_USAGE.md) for the live provider and manifest evidence.
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Interface | Next.js 16, React 19, TypeScript | responsive workspace, Judge Mode, policy authoring, and review |
+| API | Python, FastAPI, Pydantic | workflow enforcement and typed contracts |
+| Validation | FactLock | deterministic per-modality conformance checks |
+| Orchestration | Genblaze | provider runs, manifests, B2 sink, and retry lineage |
+| Generation | OpenAI image + TTS | creative background and narration |
+| Observation | OpenAI transcription + vision | independently observe final media |
+| Composition | Pillow | deterministic critical-text rendering |
+| Storage | Backblaze B2, S3-compatible API | private evidence graph and signed delivery |
+| Testing | Pytest, Playwright, TypeScript | API, policy, browser, responsive, and build verification |
+| Runtime | Docker Compose | reproducible local production topology |
+
+## Judge Quick Start
+
+### Controlled Demo Without Provider Credentials
+
+1. Open the RecallCast workspace.
+2. Select **Identifier mutation** or **Action weakening**.
+3. Run FactLock and inspect the blocking finding.
+4. Compare the canonical fact with the observed evidence.
+5. Run the controlled correction and inspect its parent lineage.
+6. Update the fictional source remedy and confirm dependent assets become stale.
+
+### Connected Public-Source Proof
+
+1. Select **Frigidaire Gas Ranges — CPSC 26-333**.
+2. Review the official source attribution and exact identifier coverage.
+3. Acknowledge the source to enable an unaffiliated draft.
+4. Select **Run 60-second proof**.
+5. Compare the rejected serial mutation with the corrective narration.
+6. Inspect both audio controls, run IDs, parent link, final-pixel evidence, and checks.
+7. Record the final human approve or reject decision.
+
+### Bring Your Own Recall Source
+
+1. Open **Import source**.
+2. Upload or paste a complete English stop-use recall notice.
+3. Review and confirm the extracted contract.
+4. Inspect the auto-locked identifiers and proposed concepts.
+5. Attest and activate the deterministic policy.
+6. Generate the media package.
+7. Review final pixels, narration, FactLock evidence, and release decision.
+
+Do not submit sensitive, confidential, or unapproved recall information to a public deployment.
+
+## Local Installation
+
+### Requirements
+
+- Python 3.11+
+- Node.js 20+
+- [`uv`](https://docs.astral.sh/uv/)
+- npm
+- Docker Desktop only if using the container path
+
+### Clone and Configure
+
+```bash
+git clone https://github.com/ankitlade12/recallcast.git
+cd recallcast
+cp .env.example .env
+```
+
+The controlled fictional flow runs without provider credentials. For the connected path, configure private B2 and OpenAI credentials in `.env`; never expose them to the browser or commit them.
+
+### Run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+- Product: <http://localhost:3000>
+- API health: <http://localhost:8000/health>
+- Interactive API docs: <http://localhost:8000/docs>
+
+### Run in Development Mode
+
+API:
 
 ```bash
 cd services/api
@@ -80,191 +380,230 @@ set +a
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
-The API is available at `http://localhost:8000`; interactive docs are at
-`http://localhost:8000/docs`.
+Web application:
 
-Run tests:
+```bash
+cd apps/web
+npm ci
+npm run dev
+```
+
+Open <http://localhost:3000>.
+
+## Deploying to Render
+
+The repository includes [`render.yaml`](render.yaml) with two Docker web services:
+
+| Service | Purpose | Health check |
+|---|---|---|
+| `recallcast-api-ankitlade12` | FastAPI, FactLock, Genblaze, OpenAI, and B2 | `/health` |
+| `recallcast-app-ankitlade12` | public Next.js product interface | `/` |
+
+Deploy from the Render Dashboard:
+
+1. Select **New → Blueprint**.
+2. Connect `https://github.com/ankitlade12/recallcast`.
+3. Render detects the root `render.yaml`.
+4. Enter the prompted `sync: false` values for `B2_KEY_ID`, `B2_APP_KEY`, `B2_BUCKET`, `B2_REGION`, `B2_ENDPOINT`, and `OPENAI_API_KEY`.
+5. Create the Blueprint and wait for both health checks to pass.
+6. Apply [`infra/b2/cors.json`](infra/b2/cors.json) to the bucket so signed media can load from the Render origin.
+7. Open <https://recallcast-app-ankitlade12.onrender.com>.
+8. Verify <https://recallcast-api-ankitlade12.onrender.com/health> before submitting the app URL.
+
+The Blueprint uses Render's free plan for hackathon evaluation. Free services may cold-start after inactivity; move both services to a paid instance for a latency-sensitive production deployment.
+
+If Render requires a different service slug, update both `WEB_ORIGINS` and `NEXT_PUBLIC_API_URL` in `render.yaml`, then sync the Blueprint again. Never place B2 or OpenAI secrets directly in the YAML file.
+
+## Configuration
+
+Copy `.env.example` to `.env`. The committed example contains no credentials.
+
+```bash
+# Runtime
+APP_STORAGE_MODE=memory              # use b2 for connected durable storage
+NEXT_PUBLIC_API_URL=http://localhost:8000
+WEB_ORIGINS=http://localhost:3000
+
+# Private Backblaze B2 credentials
+B2_KEY_ID=
+B2_APP_KEY=
+B2_BUCKET=
+B2_REGION=
+B2_ENDPOINT=
+
+# Server-side OpenAI providers
+OPENAI_API_KEY=
+OPENAI_EXTRACTION_MODEL=gpt-5.6
+OPENAI_IMAGE_MODEL=gpt-image-2
+OPENAI_TTS_MODEL=gpt-4o-mini-tts
+OPENAI_TTS_VOICE=coral
+OPENAI_TRANSCRIPTION_MODEL=gpt-transcribe
+OPENAI_VISION_MODEL=gpt-5.6-sol
+
+# Operations
+RECALLCAST_BACKGROUND_KEY=
+RECALLCAST_ADMIN_TOKEN=
+RECALLCAST_FONT_PATH=
+```
+
+Use a bucket-restricted B2 application key. Forced regeneration requires `X-RecallCast-Admin-Token`; ordinary generation is idempotent and serialized to avoid accidental duplicate provider spend.
+
+## Reproducible Testing
+
+API and FactLock suite:
 
 ```bash
 cd services/api
 uv run pytest
 ```
 
-### Web app
-
-Node 20+ is required.
+Web type-check:
 
 ```bash
 cd apps/web
-npm install
-npm run dev
+npm run lint
 ```
 
-Open `http://localhost:3000`. The UI can demonstrate the complete controlled
-failure, retry, approval, and stale-asset story without provider credentials.
-When the API is available, set `NEXT_PUBLIC_API_URL=http://localhost:8000`.
+Browser workflows:
 
-Run the production containers locally with `docker compose up --build`. The
-provider-spend endpoints are serialized, idempotent by default, and require
-`X-RecallCast-Admin-Token` when forced regeneration is requested.
+```bash
+cd apps/web
+npm run test:e2e
+```
 
-## API slice
+Production web build:
+
+```bash
+cd apps/web
+npm run build
+```
+
+Current verified result:
+
+```text
+API and FactLock     42 passed
+Browser workflows    5 passed
+TypeScript            passed
+Next.js build         passed
+```
+
+Coverage includes source validation, policy activation, contract and policy hash binding, exact identifier mutation, action reversal, unavailable evidence, manifest failure, per-modality requirements, serial speech matching, public-case confirmation, terminal review decisions, mobile layout, Judge Mode, and the custom import-to-generation workflow.
+
+## API Highlights
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/health` | Health and runtime mode |
-| `GET` | `/api/demo` | Fictional recall, fact contract, and scenarios |
-| `POST` | `/api/validate` | Validate reverse-extracted media text |
-| `POST` | `/api/demo/run` | Run a controlled asset through FactLock |
-| `POST` | `/api/demo/retry/{run_id}` | Create a parent-linked corrected retry |
-| `POST` | `/api/assets/{asset_id}/approve` | Apply the human release gate |
-| `POST` | `/api/demo/source-update` | Change the contract and stale prior assets |
-| `GET` | `/api/storage/health` | Verify live B2 connection and encryption |
-| `POST` | `/api/storage/bootstrap` | Persist source notice and fact contract |
-| `GET` | `/api/storage/objects` | Inspect the RecallCast B2 evidence graph |
-| `GET` | `/api/storage/presign` | Create a short-lived private asset URL |
-| `POST` | `/api/intake/extract` | Extract a typed, review-only contract draft from uploaded/pasted text |
-| `POST` | `/api/intake/confirm` | Revalidate edits and persist a human-confirmed contract separately |
-| `GET` | `/api/intake/{draft_id}/policy` | Load the contract-bound policy draft or active policy |
-| `POST` | `/api/intake/{draft_id}/policy/activate` | Attest, validate, hash-bind, and persist deterministic rules |
-| `POST` | `/api/intake/{draft_id}/packages/generate` | Generate and independently validate a policy-enabled custom package |
-| `POST` | `/api/intake/{draft_id}/packages/{package_id}/review` | Persist the custom package's terminal human decision |
-| `GET` | `/api/cases/cpsc-26-333` | Return the attributed public CPSC case and unconfirmed fact contract |
-| `POST` | `/api/cases/cpsc-26-333/bootstrap` | Persist source, contract, and attribution evidence in B2 |
-| `POST` | `/api/cases/cpsc-26-333/confirm` | Record operator source acknowledgment and enable draft generation |
-| `POST` | `/api/cases/cpsc-26-333/packages/generate` | Build or return the public-case voice + visual evidence package |
-| `POST` | `/api/cases/cpsc-26-333/packages/{package_id}/review` | Persist a terminal human approve/reject decision bound to package evidence |
-| `POST` | `/api/genblaze/sdk-storage-smoke` | Verify Genblaze manifests and B2 sink |
-| `POST` | `/api/genblaze/live-background` | Generate an OpenAI background through Genblaze into B2 |
-| `POST` | `/api/packages/generate` | Return or build the live multimodal evidence package |
-| `POST` | `/api/packages/revalidate` | Re-run FactLock over stored transcript and OCR evidence |
+| `GET` | `/health` | runtime, storage, and provider readiness |
+| `POST` | `/api/validate` | run FactLock over reverse-extracted evidence |
+| `POST` | `/api/demo/run` | execute a controlled validation case |
+| `POST` | `/api/demo/retry/{run_id}` | create a parent-linked corrected attempt |
+| `POST` | `/api/intake/extract` | create a review-only contract draft |
+| `POST` | `/api/intake/confirm` | confirm and persist a source-grounded contract |
+| `POST` | `/api/intake/{draft_id}/policy/activate` | attest and activate deterministic rules |
+| `POST` | `/api/intake/{draft_id}/packages/generate` | build a custom evidence package |
+| `POST` | `/api/intake/{draft_id}/packages/{package_id}/review` | record terminal human review |
+| `POST` | `/api/cases/cpsc-26-333/packages/generate` | build or load the public-case proof |
+| `POST` | `/api/genblaze/live-background` | create a bounded live Genblaze image run |
+| `GET` | `/api/storage/presign` | issue a short-lived private asset URL |
 
-## Safety model
+Interactive OpenAPI documentation is available at `/docs` while the API is running.
 
-- Critical identifiers use exact or normalized deterministic matching.
-- A failed blocking check cannot be averaged away by a model score.
-- Missing reverse-extraction evidence produces `quarantined`, never `passed`.
-- Generated backgrounds remain creative; product identity and critical safety
-  overlays are deterministic.
-- AI drafts and checks. A human releases.
-- Public-case approval and rejection are terminal, append-only review records
-  binding reviewer, rationale, contract hash, validation hash, and artifact hashes.
-- Imported sources never trigger media generation automatically. The first custom
-  template supports English stop-use recalls with 1–4 models, 1–3 ranges, a phone,
-  and a URL; unsupported contracts fail closed before provider spend.
-- Custom media is bound to both the confirmed contract hash and active policy hash.
+## Project Structure
 
-All demo data is fictional. RecallCast is not legal advice, regulatory
-approval, certified translation, or a substitute for qualified human review.
+```text
+recallcast/
+├── apps/web/                    # Next.js product interface and Playwright tests
+├── services/api/               # FastAPI, FactLock, media pipeline, and Pytest suite
+│   └── app/
+│       ├── domain/             # contracts, policies, findings, packages, and reviews
+│       ├── media/              # composition, TTS, observation, retry, and packaging
+│       ├── providers/          # Genblaze provider orchestration
+│       ├── storage/            # private B2 adapter
+│       └── validation/         # deterministic FactLock engine
+├── infra/b2/                   # CORS, lifecycle, least-privilege, and verification
+├── docs/                       # focused B2 and Genblaze technical evidence
+├── compose.yaml
+├── render.yaml                 # two-service Render Blueprint
+├── .env.example
+└── LICENSE
+```
 
-## Provider path
+## Safety and Security Boundaries
 
-The provider adapter in
-`services/api/app/providers/genblaze_pipeline.py` follows the official
-Genblaze `Pipeline`, `ObjectStorageSink`, optional image fallback models,
-manifest verification, and parent-run concepts. The verified path uses OpenAI
-while critical recall facts remain deterministic compositor layers.
+- Critical recall copy is rendered deterministically, not generated into pixels by an image model.
+- A model score cannot override a blocking deterministic failure.
+- Missing transcript or visual evidence quarantines the package.
+- Contracts require human confirmation before custom policy activation.
+- Policy concepts must be grounded in the confirmed canonical fields.
+- Approval requires a passing package, a named reviewer, a rationale, and attestation.
+- Review decisions are terminal and bind all artifact hashes.
+- Provider credentials remain server-side; `.env` is ignored by Git.
+- Private B2 objects are reviewed through time-bounded signed URLs.
+- Public CPSC content remains attributed and clearly labeled as unaffiliated.
 
-| Stage | Implementation | Failure behavior |
-|---|---|---|
-| Creative background | Genblaze + OpenAI `gpt-image-2` | reuse verified B2 background |
-| Narration | Genblaze + OpenAI `gpt-4o-mini-tts` | one contract-derived parent-linked retry |
-| Reverse transcription | OpenAI `gpt-transcribe` | quarantine when absent or nonconforming |
-| Visual reading | OpenAI `gpt-5.6-sol` vision | quarantine when absent or nonconforming |
-| Composition | deterministic Pillow template | critical copy never delegated to image generation |
-| Release | deterministic FactLock + human review | never auto-release |
+RecallCast is not legal advice, regulatory approval, a certified translation service, or a substitute for qualified recall owners and safety reviewers.
 
-### Verified SDK versions
+## Why RecallCast Is Different
 
-| Package | Version | Status |
-|---|---:|---|
-| `genblaze-core` | `0.3.8` | Pipeline and manifest verified |
-| `genblaze-s3` | `0.3.6` | Live B2 sink verified |
-| `genblaze-openai` | `0.3.4` | `gpt-image-2` live path configured |
+| Capability | Basic AI media generator | Manual media review | RecallCast |
+|---|:---:|:---:|:---:|
+| Structured source contract | ❌ | ⚠️ | ✅ |
+| Exact identifier and range policy | ❌ | ⚠️ | ✅ |
+| Validates final voice and pixels | ❌ | ⚠️ | ✅ |
+| Missing evidence fails closed | ❌ | ⚠️ | ✅ |
+| Preserves rejected attempt lineage | ❌ | ❌ | ✅ |
+| Contract-derived bounded correction | ❌ | ❌ | ✅ |
+| Cryptographic contract and policy binding | ❌ | ❌ | ✅ |
+| Durable multimodal evidence graph | ❌ | ⚠️ | ✅ |
+| Accountable terminal human decision | ⚠️ | ✅ | ✅ |
 
-### Verified live OpenAI run
+The novelty is the combination: **contract-driven generation + independent multimodal observation + deterministic fail-closed conformance + parent-linked correction + durable human release evidence.**
 
-On August 1, 2026, the project generated one `gpt-image-2` background through
-Genblaze, stored the PNG and manifest in private B2, and verified the manifest.
-Run `59d1f1b6-f355-4638-93a3-7c13f51881a5` completed its provider step in
-20.5 seconds. The asset SHA-256 is
-`aca9d67aa1d96e2001e958afe4c75349171b84f6a19ad28bccd323bdb280e869` and
-the manifest hash is
-`ac16d4bb67e365900596412f9c921bddc448a49665765679134629367dc4a52c`.
+## Bounded Agentic Design
 
-The `sdk-storage-smoke` endpoint deliberately uses Genblaze's explicit mock
-provider with a deterministic fixture. It proves the SDK, B2 sink, asset
-transfer, SHA-256 manifest, and verification path, but is never represented as
-AI-generated media.
+RecallCast does not use an open-ended general agent or allow AI to decide release policy.
 
-The live OpenAI endpoint is implemented with a creative-background-only prompt.
-All critical product identifiers and safety text remain outside the generated
-layer.
+```text
+generate → observe → validate → quarantine → correct once → validate → human decision
+```
 
-### Verified multimodal package
+Genblaze supplies provider execution and retry lineage. OpenAI creates and observes media. FactLock remains deterministic. A human owns release authority. This bounded design is easier to audit and safer than adding an agent framework solely to claim autonomy.
 
-On August 1, 2026, package `pkg_fe230c3fab0424ca` reused the verified
-`gpt-image-2` background, composed the final 1080×1080 card, generated a real
-`gpt-4o-mini-tts` MP3 through Genblaze, reverse-transcribed it with
-`gpt-transcribe`, and independently read the final pixels with `gpt-5.6-sol`.
-FactLock passed all 15 audio and visual checks and left the package in
-`needs_review`; the narration manifest hash is
-`93c68f02c6c01eb66714828ffdd06d9d70667f4cd8398090d4b0dd3deeabffa0`.
+## Production Boundary
 
-Spanish package `pkg_495ddb0b8a5419cc` independently passed the same 15
-checks. The Unicode-safe compositor was verified from the final pixels,
-including accented safety text and the human-approval watermark.
+RecallCast is a working end-to-end hackathon product with real provider, storage, reverse-observation, validation, and review paths. The public-source package is an unaffiliated demonstration, not an official regulator or manufacturer communication.
 
-A separate fail-closed live run preserved rejected narration run
-`9b9540fe-bc9f-49a9-9c45-c118b5797b0e` and generated corrective run
-`56b977e5-f975-4112-953c-367fb2a010ce`. The child manifest points to the
-rejected run as its parent and the corrected evidence passed all 15 checks.
+Before production use by recall owners, a deployment should add managed identity, role separation, multi-tenant authorization, managed secrets and KMS, malware scanning for broader uploads, monitoring, backup and restoration, deletion and retention operations, formal accessibility testing, incident response, and legal review.
 
-### Verified public-source case package
+## Roadmap
 
-The separately labeled CPSC 26-333 workspace is now runnable after an operator
-checks the official notice and records an acknowledgment. Package
-`pkg_1c77641198bc83f8` generated a deterministic 1080×1080 card containing all
-23 exact models and produced an AI narration through Genblaze. The first voice
-run mutated the upper serial endpoint during speech and was correctly rejected.
-Corrective run `22655855-0461-443a-ac08-45ac378d976c` is linked to rejected run
-`503ac6b5-88be-4c6d-b38e-4b5ae07c9ba9`, deliberately enunciates each serial
-character, and passed the 14 public-case audio and visual checks with zero
-blocking failures. The package remains `needs_review`; it is an unaffiliated
-AI draft, never an official CPSC or Electrolux Group communication.
-After FactLock passes, the package remains `needs_review` until a named reviewer
-records a rationale and either rejects it or accepts an explicit accountability
-attestation. That decision is stored as immutable review evidence in B2 and the
-current package head is updated to `approved` or `rejected`.
+- Additional explicit recall templates beyond English stop-use notices
+- Native-language policy packs and independently verified localization
+- MP4 composition with synchronized captions and audio descriptions
+- Source-change dependency graphs across every generated channel
+- Enterprise identity, reviewer assignment, and separation of duties
+- Recall-management, CMS, notification, and distribution integrations
+- Consumer comprehension testing in addition to factual fidelity
+- Policy families for emergency alerts, equipment safety, and regulated disclosures
 
-The package UI deliberately separates communication from proof. The consumer
-alert leads with the required action and refers viewers to the companion card;
-the companion retains all 23 exact model identifiers. Judge Mode then shows the
-failed and corrected transcripts, audio, run IDs, parent link, checks, and human
-release gate without requiring judges to explore the full workspace first.
+## Backblaze Generative Media Hackathon
 
-## Environment
+- **Product:** RecallCast
+- **Core assurance engine:** FactLock
+- **Storage and evidence:** Backblaze B2 Cloud Storage
+- **Generative orchestration:** Genblaze
+- **AI provider:** OpenAI
+- **Repository:** <https://github.com/ankitlade12/recallcast>
+- **License:** MIT
 
-Copy `.env.example` and add only the credentials needed by the path being run.
-Never expose provider or storage credentials to the browser.
+The submission demonstrates real Genblaze image and narration runs, direct B2 asset transfer, verified manifests, structured pipeline evidence, parent-linked correction, final-media observation, and an accountable release gate.
 
-Backblaze bucket setup, least-privilege key guidance, lifecycle rules, CORS,
-and verification are in [infra/b2](infra/b2/README.md).
+## License
 
-## Challenge fit
+[MIT](LICENSE) © 2026 Ankit Hemant Lade and RecallCast contributors.
 
-RecallCast is designed around the four equally weighted judging criteria:
+---
 
-1. **Real-world utility:** safety and recall teams need fast, accessible media
-   without weakening approved instructions.
-2. **Production readiness:** explicit state, fail-closed validation, bounded
-   retry, fallback, human approval, lineage, and version invalidation.
-3. **B2 orchestration:** source versions, assets, rejected attempts,
-   transcripts, validation reports, and manifests form one durable graph.
-4. **Genblaze:** real image and audio generation, B2 asset transfer, verified
-   manifests, structured run events, and parent-linked corrective retries.
+**Built for the Backblaze Generative Media Hackathon.**
 
-See [docs/PRODUCT_STRATEGY.md](docs/PRODUCT_STRATEGY.md) for the differentiation
-and judging strategy. See [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md)
-for the remaining launch work and [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)
-for the three-minute judging narrative.
+*Generate faster. Verify every fact. Release with evidence.*

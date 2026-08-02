@@ -12,8 +12,8 @@ when media needs to be reviewed.
 - **Object Lock:** optional for the hackathon; enable only if the retention
   consequences are understood
 - **Lifecycle rules:** apply `lifecycle.json`
-- **CORS:** apply `cors.json` only after replacing the placeholder production
-  origin
+- **CORS:** `cors.json` includes localhost and the default RecallCast Render
+  origin; update it if the deployed service slug changes
 
 Do not place company names, consumer details, PHI, or PII in bucket names or
 object keys.
@@ -71,8 +71,8 @@ Never commit `.env`, paste the secret into chat, or expose it with a
 2. Record its S3 endpoint and region.
 3. Enable default SSE-B2 encryption.
 4. Add the lifecycle rules from `lifecycle.json`.
-5. Replace `https://YOUR-DEPLOYED-WEB-APP.example` in `cors.json`.
-6. Add the CORS configuration.
+5. Confirm the deployed web origin in `cors.json`.
+6. Add the CORS configuration from `cors.json`.
 7. Create the bucket-restricted application key.
 8. Populate `.env` locally.
 9. Run `./infra/b2/verify.sh`.
