@@ -5,7 +5,7 @@
 [![Backblaze B2](https://img.shields.io/badge/Backblaze-B2-F50000.svg)](https://www.backblaze.com/cloud-storage)
 [![Genblaze](https://img.shields.io/badge/Genblaze-0.3.x-2F6FED.svg)](https://github.com/backblaze-labs/genblaze)
 [![OpenAI](https://img.shields.io/badge/OpenAI-multimodal-111111.svg?logo=openai&logoColor=white)](https://platform.openai.com/docs/)
-[![Render](https://img.shields.io/badge/Render-ready-46E3B7.svg?logo=render&logoColor=111111)](#deploying-to-render)
+[![Live Demo](https://img.shields.io/badge/Render-live-46E3B7.svg?logo=render&logoColor=111111)](https://recallcast-app-ankitlade12.onrender.com)
 [![Tests](https://img.shields.io/badge/tests-42%20API%20%2B%205%20browser-brightgreen.svg)](#reproducible-testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -21,6 +21,7 @@ approved source → confirmed fact contract → active policy pack → generated
 ```
 
 **Hackathon:** Backblaze Generative Media Hackathon — Genblaze on B2<br>
+**Live demo:** <https://recallcast-app-ankitlade12.onrender.com><br>
 **Repository:** <https://github.com/ankitlade12/recallcast><br>
 **Demo posture:** fictional controlled case plus a clearly labeled, unaffiliated public-source CPSC proof
 
@@ -389,30 +390,6 @@ npm run dev
 ```
 
 Open <http://localhost:3000>.
-
-## Deploying to Render
-
-The repository includes [`render.yaml`](render.yaml) with two Docker web services:
-
-| Service | Purpose | Health check |
-|---|---|---|
-| `recallcast-api-ankitlade12` | FastAPI, FactLock, Genblaze, OpenAI, and B2 | `/health` |
-| `recallcast-app-ankitlade12` | public Next.js product interface | `/` |
-
-Deploy from the Render Dashboard:
-
-1. Select **New → Blueprint**.
-2. Connect `https://github.com/ankitlade12/recallcast`.
-3. Render detects the root `render.yaml`.
-4. Enter the prompted `sync: false` values for `B2_KEY_ID`, `B2_APP_KEY`, `B2_BUCKET`, `B2_REGION`, `B2_ENDPOINT`, and `OPENAI_API_KEY`.
-5. Create the Blueprint and wait for both health checks to pass.
-6. Apply [`infra/b2/cors.json`](infra/b2/cors.json) to the bucket so signed media can load from the Render origin.
-7. Open <https://recallcast-app-ankitlade12.onrender.com>.
-8. Verify <https://recallcast-api-ankitlade12.onrender.com/health> before submitting the app URL.
-
-The Blueprint uses Render's free plan for hackathon evaluation. Free services may cold-start after inactivity; move both services to a paid instance for a latency-sensitive production deployment.
-
-If Render requires a different service slug, update both `WEB_ORIGINS` and `NEXT_PUBLIC_API_URL` in `render.yaml`, then sync the Blueprint again. Never place B2 or OpenAI secrets directly in the YAML file.
 
 ## Configuration
 
