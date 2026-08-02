@@ -1,0 +1,24 @@
+{
+  "CORSRules": [
+    {
+      "ID": "recallcast-review-assets",
+      "AllowedHeaders": [
+        "Range"
+      ],
+      "AllowedMethods": [
+        "GET",
+        "HEAD"
+      ],
+      "AllowedOrigins": [
+        "http://localhost:3000",
+        "https://YOUR-DEPLOYED-WEB-APP.example"
+      ],
+      "ExposeHeaders": [
+        "Content-Length",
+        "Content-Range",
+        "ETag"
+      ],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}

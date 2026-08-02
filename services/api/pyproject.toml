@@ -1,0 +1,29 @@
+[project]
+name = "recallcast-api"
+version = "0.1.0"
+description = "FactLock validation and orchestration API for RecallCast"
+requires-python = ">=3.11"
+dependencies = [
+  "boto3>=1.40,<2",
+  "fastapi>=0.115,<1",
+  "pydantic>=2.10,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8,<10",
+]
+genblaze = [
+  "genblaze-core>=0.1",
+  "genblaze-openai>=0.1",
+  "genblaze-s3>=0.1",
+  "openai>=2.52,<3",
+  "pillow>=11,<13",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

@@ -1,0 +1,76 @@
+{
+  "Rules": [
+    {
+      "ID": "delete-temporary-frames",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "recallcast/tmp/frames/"
+      },
+      "Expiration": {
+        "Days": 1
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 1
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 1
+      }
+    },
+    {
+      "ID": "delete-temporary-frame-markers",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "recallcast/tmp/frames/"
+      },
+      "Expiration": {
+        "ExpiredObjectDeleteMarker": true
+      }
+    },
+    {
+      "ID": "delete-intermediate-compositions",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "recallcast/intermediate/"
+      },
+      "Expiration": {
+        "Days": 7
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 1
+      }
+    },
+    {
+      "ID": "delete-intermediate-markers",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "recallcast/intermediate/"
+      },
+      "Expiration": {
+        "ExpiredObjectDeleteMarker": true
+      }
+    },
+    {
+      "ID": "delete-hackathon-quarantine-after-review",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "recallcast/quarantine/"
+      },
+      "Expiration": {
+        "Days": 30
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 1
+      }
+    },
+    {
+      "ID": "delete-quarantine-markers",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "recallcast/quarantine/"
+      },
+      "Expiration": {
+        "ExpiredObjectDeleteMarker": true
+      }
+    }
+  ]
+}

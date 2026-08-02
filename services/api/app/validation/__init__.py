@@ -1,0 +1,1 @@
+"""FactLock validation."""
